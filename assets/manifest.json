@@ -1,0 +1,10 @@
+{
+    "$schema": "http://json.schemastore.org/chrome-manifest",
+    "name": "Web Ops",
+    "version": "0.0.1",
+    "manifest_version": 2,
+    "permissions": ["webNavigation"],
+    "optional_permissions": ["<all_urls>"],
+    "background": { "page": "background.html" },
+    "description": "AppOps for Web platform."
+}
