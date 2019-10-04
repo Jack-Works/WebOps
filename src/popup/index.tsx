@@ -13,7 +13,7 @@ async function main() {
             theme={MaterialUI.createMuiTheme({
                 palette: { type: 'dark', primary: MaterialUI.colors.teal, secondary: MaterialUI.colors.cyan },
             })}>
-            <PopupSettingsCard origin={tab.url!} settings={settings} />
+            <PopupSettingsCard origin={new URL(tab.url!).origin} settings={settings} />
         </MaterialUI.MuiThemeProvider>,
         container,
     )
