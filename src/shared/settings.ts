@@ -10,18 +10,18 @@ export interface WebOpsBaseSetting {
      */
     managed: boolean
 }
-export type MatchingTypes = 'regexp'
 export type WebOpsSettingForSite = {
     active: boolean
     /** Should be the name of a template */
     extends: string
     rules: WebOpsSettings[]
 }
-export declare type WebOpsTemplate = {
+export type MatchingTypes = 'regexp'
+export type WebOpsTemplate = {
     matches: [MatchingTypes, string][]
     no_matches: [MatchingTypes, string][]
     rules: WebOpsSettings[]
-    order: number
+    priority: number
 }
 export interface WebOpsSettingsStore {
     /**
@@ -42,7 +42,7 @@ export async function readSettings(): Promise<WebOpsSettingsStore> {
     const result = (((await browser.storage.sync.get()) as any) as WebOpsSettingsStore) || {}
     if (!result.rules) result.rules = {}
     if (!result.templates)
-        result.templates = { default: { matches: [['regexp', '.+']], no_matches: [], rules: [], order: -Infinity } }
+        result.templates = { default: { matches: [['regexp', '.+']], no_matches: [], rules: [], priority: -Infinity } }
     return result
 }
 let currentSetting: WebOpsSettingsStore
