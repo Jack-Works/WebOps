@@ -1,3 +1,5 @@
+/// <reference path="./global.d.ts" />
+
 import { WebOpsSettingsNotification } from './types/Notification'
 export type WebOpsRules = 'Notification'
 export type WebOpsSettings = WebOpsSettingsNotification
@@ -12,7 +14,7 @@ export type MatchingTypes = 'regexp'
 export type WebOpsSettingForSite = {
     active: boolean
     /** Should be the name of a template */
-    extends?: string
+    extends: string
     rules: WebOpsSettings[]
 }
 export declare type WebOpsTemplate = {
@@ -44,17 +46,26 @@ export async function readSettings(): Promise<WebOpsSettingsStore> {
     return result
 }
 let currentSetting: WebOpsSettingsStore
-export async function writeSettings(settings = currentSetting) {
-    return browser.storage.sync.set(settings as any)
+export interface Events {
+    updated: void
 }
-const ready = readSettings().then(x => (currentSetting = x))
+const messageCenter = new HoloflowsKit.MessageCenter<Events>()
+function updateSetting() {
+    return readSettings().then(x => (currentSetting = x))
+}
+updateSetting()
+messageCenter.on('updated', updateSetting)
+async function writeSettings(settings = currentSetting) {
+    await browser.storage.sync.set(settings as any)
+    messageCenter.emit('updated', undefined, true)
+}
 export async function readSettingsForSite(url: string): Promise<WebOpsSettingForSite> {
-    await ready
+    await updateSetting()
     for (const matchingRule in currentSetting.rules) {
         if (matchingRule === new URL(url).origin) {
             const rule = Object.assign({}, currentSetting.rules[matchingRule])
             const template = currentSetting.templates[rule.extends || 'default'] || {}
-            rule.rules = Object.assign({}, template.rules || {}, rule.rules)
+            rule.rules = [...template.rules, ...rule.rules]
             return rule
         }
     }
@@ -65,10 +76,10 @@ export async function readSettingsForSite(url: string): Promise<WebOpsSettingFor
             matches.some(([type, rule]) => url.match(new RegExp(rule))) &&
             no_matches.some(([type, rule]) => url.match(new RegExp(rule))) === false
         ) {
-            return { active: true, rules }
+            return { active: true, rules, extends: template }
         }
     }
-    return { active: false, rules: [] }
+    return { active: false, rules: [], extends: 'default' }
 }
 export async function modifyRule(url: string, newRule: WebOpsSettingForSite) {
     const origin = new URL(url).origin

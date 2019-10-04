@@ -1,4 +1,4 @@
-import { WebOpsSettingForSite, readSettingsForSite } from '../shared/settings'
+import { WebOpsSettingForSite, readSettingsForSite, Events } from '../shared/settings'
 
 export interface WebOpsMainFrameHook {
     onPreferenceUpdated(newPreference: WebOpsSettingForSite): void
@@ -23,12 +23,15 @@ function codeInMainFrame() {
 }
 const eventID = Math.random() + ''
 async function updatePreference() {
+    const next = await readSettingsForSite(location.href)
     document.dispatchEvent(
         new CustomEvent(eventID, {
-            detail: await readSettingsForSite(location.href),
+            detail: next,
         }),
     )
 }
+const messageCenter = new HoloflowsKit.MessageCenter<Events>()
+messageCenter.on('updated', updatePreference)
 const loadedHooks: HookFunction[] = []
 export function addHook(f: HookFunction) {
     loadedHooks.push(f)

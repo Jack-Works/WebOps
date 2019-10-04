@@ -1,9 +1,9 @@
 import { addHook } from '../inject'
 
 addHook(getPref => {
-    function getRule() {
+    function getRule(pref = getPref()) {
         return (
-            getPref().rules.filter(x => x.name === 'Notification')[0] || {
+            pref.rules.filter(x => x.name === 'Notification')[0] || {
                 managed: false,
                 value: 'default',
                 name: 'Notification',
@@ -33,8 +33,6 @@ addHook(getPref => {
     })
 
     return {
-        onPreferenceUpdated(next) {
-            console.log('Preference updated!', next)
-        },
+        onPreferenceUpdated(next) {},
     }
 })

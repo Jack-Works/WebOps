@@ -22,7 +22,8 @@
     "noImplicitReturns": true /* Report error when not all code paths in function return a value. */,
     "noFallthroughCasesInSwitch": true /* Report errors for fallthrough cases in switch statement. */,
     "typeRoots": ["../../node_modules/web-ext-types"] /* List of folders to include type definitions from. */,
-    "allowUmdGlobalAccess": true /* Allow accessing UMD globals from modules. */
+    "allowUmdGlobalAccess": true /* Allow accessing UMD globals from modules. */,
+    "allowSyntheticDefaultImports": true
   },
   "references": [
     {

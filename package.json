@@ -8,7 +8,16 @@
   "license": "AGPL-3.0-or-later",
   "private": true,
   "dependencies": {
+    "@holoflows/kit": "^0.5.0",
+    "@material-ui/core": "^4.5.0",
+    "@types/react": "^16.9.5",
+    "@types/react-dom": "^16.9.1",
+    "async-call-rpc": "^1.0.0",
+    "react": "^16.10.2",
+    "react-dom": "^16.10.2",
     "rollup": "^1.22.0",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-typescript2": "^0.24.3",
     "typescript": "^3.6.3",
     "web-ext-types": "^3.2.1",
@@ -16,7 +25,8 @@
   },
   "scripts": {
     "postinstall": "node ./scripts/build.js",
-    "build": "node ./scripts/build.js && tsc -b ./src/background/ ./src/shared/ && rollup -c",
-    "start": "tsc -b -w ./src/background ./src/shared | rollup -c -w"
+    "build": "node ./scripts/build.js && tsc -b ./src/background/ ./src/shared/ ./src/popup/ && rollup -c",
+    "start:rollup": "rollup -c -w",
+    "start:tsc": "tsc -b -w ./src/background ./src/shared ./src/popup"
   }
 }
