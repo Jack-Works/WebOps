@@ -3,8 +3,10 @@
     "name": "Web Ops",
     "version": "0.0.1",
     "manifest_version": 2,
-    "permissions": ["webNavigation"],
-    "optional_permissions": ["<all_urls>"],
+    "permissions": ["webNavigation", "storage"],
+    "content_scripts": [
+        { "js": ["/dependencies/browser-polyfill.js", "/content/index.js"], "matches": ["<all_urls>"] }
+    ],
     "background": { "page": "background.html" },
     "description": "AppOps for Web platform."
 }

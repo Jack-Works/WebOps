@@ -1,1 +1,1 @@
-console.log('Hello from background script!', browser)
+console.log('Hello from background page')

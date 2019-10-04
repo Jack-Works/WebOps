@@ -7,7 +7,7 @@
     "declaration": true /* Generates corresponding '.d.ts' file. */,
     "declarationMap": true /* Generates a sourcemap for each corresponding '.d.ts' file. */,
     "sourceMap": true /* Generates corresponding '.map' file. */,
-    "outDir": "../../build/background/" /* Redirect output structure to the directory. */,
+    "outDir": "../../build/shared/" /* Redirect output structure to the directory. */,
     "rootDir": "./" /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */,
     "composite": true /* Enable project compilation */,
     "tsBuildInfoFile": "./.tsbuildinfo" /* Specify file to store incremental compilation information */,
@@ -23,10 +23,5 @@
     "noFallthroughCasesInSwitch": true /* Report errors for fallthrough cases in switch statement. */,
     "typeRoots": ["../../node_modules/web-ext-types"] /* List of folders to include type definitions from. */,
     "allowUmdGlobalAccess": true /* Allow accessing UMD globals from modules. */
-  },
-  "references": [
-    {
-      "path": "../shared/"
-    }
-  ]
+  }
 }

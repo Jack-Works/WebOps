@@ -8,13 +8,15 @@
   "license": "AGPL-3.0-or-later",
   "private": true,
   "dependencies": {
+    "rollup": "^1.22.0",
+    "rollup-plugin-typescript2": "^0.24.3",
     "typescript": "^3.6.3",
     "web-ext-types": "^3.2.1",
     "webextension-polyfill": "^0.5.0"
   },
   "scripts": {
     "postinstall": "node ./scripts/build.js",
-    "build": "node ./scripts/build.js && tsc -p ./src/background/tsconfig.json",
-    "start": "tsc -w -p ./src/background/tsconfig.json"
+    "build": "node ./scripts/build.js && tsc -b ./src/background/ ./src/shared/ && rollup -c",
+    "start": "tsc -b -w ./src/background ./src/shared | rollup -c -w"
   }
 }
