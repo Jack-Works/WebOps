@@ -25,8 +25,8 @@
   },
   "scripts": {
     "postinstall": "node ./scripts/build.js",
-    "build": "node ./scripts/build.js && tsc -b ./src/background/ ./src/shared/ ./src/popup/ && rollup -c",
+    "build": "node ./scripts/build.js && tsc -b ./src/background/ ./src/shared/ ./src/popup/ ./src/options/ && rollup -c",
     "start:rollup": "rollup -c -w",
-    "start:tsc": "tsc -b -w ./src/background ./src/shared ./src/popup"
+    "start:tsc": "tsc -b -w ./src/background ./src/shared ./src/popup ./src/options/"
   }
 }

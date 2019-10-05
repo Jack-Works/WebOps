@@ -1,6 +1,6 @@
 /// <reference path="./global.d.ts" />
 
-import { WebOpsSettingForSite, modifyRule } from '../shared/settings.js'
+import { WebOpsSettingForSite, modifyRule, useCurrentSettingsForOrigin } from '../shared/settings.js'
 import { SettingsItem } from './SettingsItem.js'
 const {
     Card,
@@ -12,6 +12,19 @@ const {
     ListItemText,
     ListItemSecondaryAction,
 } = MaterialUI
+
+export function PopupCardWithState(props: { origin: string }) {
+    const settings = useCurrentSettingsForOrigin(props.origin)
+    return (
+        <MaterialUI.MuiThemeProvider
+            theme={MaterialUI.createMuiTheme({
+                palette: { type: 'dark', primary: MaterialUI.colors.teal, secondary: MaterialUI.colors.cyan },
+            })}>
+            <PopupSettingsCard origin={props.origin} settings={settings} />
+        </MaterialUI.MuiThemeProvider>
+    )
+}
+
 export function PopupSettingsCard(props: { origin: string; settings: WebOpsSettingForSite }) {
     const notification = props.settings.rules.find(x => x.name === 'Notification') || {
         managed: false,

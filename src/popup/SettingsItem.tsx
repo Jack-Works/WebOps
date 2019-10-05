@@ -11,8 +11,12 @@ export function SettingsItem(props: {
     const [opening, setOpen] = React.useState(false)
     return (
         <ListItem
-            button={(props.drawerContent !== undefined && props.disabled !== true) as any}
-            onClick={e => e.target instanceof HTMLInputElement || setOpen(!opening)}>
+            button={(props.disabled !== true) as any}
+            onClick={e =>
+                props.drawerContent
+                    ? e.target instanceof HTMLInputElement || setOpen(!opening)
+                    : props.onSwitch(!props.active)
+            }>
             <ListItemIcon>
                 <i className="material-icons">{props.icon}</i>
             </ListItemIcon>
