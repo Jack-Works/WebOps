@@ -42,7 +42,9 @@ export async function readSettings(): Promise<WebOpsSettingsStore> {
     const result = (((await browser.storage.sync.get()) as any) as WebOpsSettingsStore) || {}
     if (!result.rules) result.rules = {}
     if (!result.templates)
-        result.templates = { default: { matches: [['regexp', '.+']], no_matches: [], rules: [], priority: -Infinity } }
+        result.templates = {
+            default: { matches: [['regexp', '.+']], no_matches: [], rules: [], priority: Number.MIN_SAFE_INTEGER },
+        }
     return result
 }
 export const currentSettingRef = new HoloflowsKit.ValueRef<WebOpsSettingsStore>(null as any)
@@ -54,6 +56,10 @@ export function useCurrentSettings() {
 export function useCurrentSettingsForOrigin(url: string) {
     const settings = useCurrentSettings()
     return readSettingsForSite(url, settings)
+}
+export function useTemplate(template: string) {
+    const settings = useCurrentSettings()
+    return settings.templates[template] || { matches: [], no_matches: [], priority: [], rules: [] }
 }
 export interface Events {
     updated: void
@@ -70,29 +76,50 @@ async function writeSettings(settings = currentSettingRef.value) {
     await browser.storage.sync.set(settings as any)
     messageCenter.emit('updated', undefined, true)
 }
-export function readSettingsForSite(url: string, settings = currentSettingRef.value): WebOpsSettingForSite {
-    for (const matchingRule in settings.rules) {
-        if (matchingRule === new URL(url).origin) {
-            const rule = Object.assign({}, settings.rules[matchingRule])
-            const template = settings.templates[rule.extends || 'default'] || {}
-            rule.rules = [...template.rules, ...rule.rules]
-            return rule
-        }
-    }
-    // TODO: sort by order
+export const InheritFromTemplate = Symbol('inherit from template')
+function getMatchingTemplate(origin: string, settings: WebOpsSettingsStore) {
     for (const template in settings.templates) {
         const { matches, no_matches, rules } = settings.templates[template]
         if (
-            matches.some(([type, rule]) => url.match(new RegExp(rule))) &&
-            no_matches.some(([type, rule]) => url.match(new RegExp(rule))) === false
+            matches.some(([type, rule]) => origin.match(new RegExp(rule))) &&
+            no_matches.some(([type, rule]) => origin.match(new RegExp(rule))) === false
         ) {
-            return { active: true, rules, extends: template }
+            return template
         }
     }
-    return { active: false, rules: [], extends: 'default' }
+    return 'no_match'
 }
-export async function modifyRule(url: string, newRule: WebOpsSettingForSite) {
+const noMatchTemplate = {
+    rules: [],
+    matches: [],
+    no_matches: [],
+    priority: -Infinity,
+}
+export function readSettingsForSite(origin: string, settings = currentSettingRef.value): WebOpsSettingForSite {
+    for (const matchingRule in settings.rules) {
+        if (matchingRule === new URL(origin).origin) {
+            const rule = Object.assign({}, settings.rules[matchingRule])
+            const template =
+                settings.templates[rule.extends || getMatchingTemplate(origin, settings)] || noMatchTemplate
+            const dereferencedRules: typeof template.rules = JSON.parse(JSON.stringify(template.rules))
+            dereferencedRules.forEach((x: any) => (x[InheritFromTemplate] = true))
+            rule.rules = dereferencedRules.filter(x => !rule.rules.find(y => x.name === y.name)).concat(rule.rules)
+            return rule
+        }
+    }
+
+    const templateName = getMatchingTemplate(origin, settings)
+    const template = settings.templates[templateName] || noMatchTemplate
+    const dereferencedRules: typeof template.rules = JSON.parse(JSON.stringify(template.rules))
+    dereferencedRules.forEach((x: any) => (x[InheritFromTemplate] = true))
+    return { active: true, rules: dereferencedRules, extends: templateName }
+}
+export async function modifyOriginRule(url: string, newRule: WebOpsSettingForSite) {
     const origin = new URL(url).origin
     currentSettingRef.value.rules[origin] = newRule
+    return writeSettings()
+}
+export async function modifyTemplateRule(template: string, newRule: WebOpsTemplate) {
+    currentSettingRef.value.templates[template] = newRule
     return writeSettings()
 }

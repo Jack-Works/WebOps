@@ -15,7 +15,7 @@ addHook(getPref => {
         const pref = getPref()
         if (pref.active === false) return oldRequestPermission()
         const rule = getRule()
-        if (rule.managed) return rule.value
+        if (rule.managed && rule.value !== 'default') return rule.value
         else return oldRequestPermission()
     }
 

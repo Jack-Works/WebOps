@@ -1,7 +1,5 @@
 import { Theme } from '@material-ui/core'
-import { ListItemProps } from '@material-ui/core/ListItem'
-import { PopupCardWithState } from '../popup/ListPermission.js'
-import { useCurrentSettings, useCurrentSettingsForOrigin } from '../shared/settings.js'
+import { useCurrentSettings, useTemplate } from '../shared/settings.js'
 import { GeneralPermissionEditor } from '../popup/GeneralPermissionEditor.js'
 
 const { makeStyles, createStyles, List, ListItem, ListItemIcon, Divider, ListItemText, Grid } = MaterialUI
@@ -14,7 +12,7 @@ const useStyles = makeStyles((theme: Theme) =>
     }),
 )
 
-export function RulesList(props: { onEdit(origin: string): void }) {
+export function TemplateList(props: { onEdit(origin: string): void }) {
     const classes = useStyles()
     const settings = useCurrentSettings()
 
@@ -25,17 +23,17 @@ export function RulesList(props: { onEdit(origin: string): void }) {
                     <ListItemIcon>
                         <i className="material-icons">add</i>
                     </ListItemIcon>
-                    <ListItemText primary="Add new rule" />
+                    <ListItemText primary="Create new template" />
                 </ListItem>
             </List>
             <Divider />
             <List dense>
-                {Object.keys(settings.rules).map(origin => (
-                    <ListItem button onClick={() => props.onEdit(origin)}>
+                {Object.keys(settings.templates).map(template => (
+                    <ListItem button onClick={() => props.onEdit(template)}>
                         {/* <ListItemIcon>
                             <Checkbox edge="start" checked tabIndex={-1} disableRipple />
                         </ListItemIcon> */}
-                        <ListItemText primary={origin} />
+                        <ListItemText primary={template} />
                         {/* <ListItemSecondaryAction>
                             <IconButton edge="end" aria-label="delete">
                                 <i className="material-icons">delete</i>
@@ -48,17 +46,16 @@ export function RulesList(props: { onEdit(origin: string): void }) {
     )
 }
 
-export default function RulesEditor() {
-    const [editing, setEditing] = React.useState<string>('http://example.com/')
-    const settings = useCurrentSettingsForOrigin(editing)
-
+export default function TemplateEditor() {
+    const [editing, setEditing] = React.useState<string>('default')
+    const template = useTemplate(editing)
     return (
         <Grid container spacing={4}>
             <Grid item xs={5}>
-                <RulesList onEdit={setEditing} />
+                <TemplateList onEdit={setEditing} />
             </Grid>
             <Grid item xs={7}>
-                <GeneralPermissionEditor type="origin" settings={settings} origin={editing} />
+                <GeneralPermissionEditor type="template" settings={template} template={editing} />
             </Grid>
         </Grid>
     )

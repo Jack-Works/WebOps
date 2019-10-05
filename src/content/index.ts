@@ -1,3 +1,4 @@
 import './hooks/Notification'
 import { loadHooks } from './inject'
-loadHooks()
+import { settingsUpdating } from '../shared/settings'
+settingsUpdating.then(loadHooks)

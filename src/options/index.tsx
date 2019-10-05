@@ -1,11 +1,12 @@
 /// <reference path="../../node_modules/web-ext-types/global/index.d.ts" />
 
-import { Events } from '../shared/settings.js'
+import { Events, settingsUpdating } from '../shared/settings.js'
 import Drawer from './Drawer.js'
 
 const container = document.createElement('main')
 
 async function main() {
+    await settingsUpdating
     ReactDOM.render(
         <MaterialUI.MuiThemeProvider
             theme={MaterialUI.createMuiTheme({

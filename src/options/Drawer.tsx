@@ -17,6 +17,7 @@ const {
 const drawerWidth = 240
 
 import RulesEditor from './RulesEditor.js'
+import TemplateEditor from './TemplateEditor.js'
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -41,9 +42,14 @@ const useStyles = makeStyles((theme: Theme) =>
         },
     }),
 )
-
+import * as Editor from '../popup/GeneralPermissionEditor.js'
+enum Options {
+    Origins,
+    Templates,
+}
 export default function PermanentDrawerLeft() {
     const classes = useStyles()
+    const [tab, setTab] = React.useState(Options.Origins)
 
     return (
         <div className={classes.root}>
@@ -65,13 +71,13 @@ export default function PermanentDrawerLeft() {
                 <div className={classes.toolbar} />
                 <Divider />
                 <List>
-                    <ListItem button>
+                    <ListItem onClick={() => setTab(Options.Origins)} selected={tab === Options.Origins} button>
                         <ListItemIcon>
                             <i className="material-icons">playlist_add</i>
                         </ListItemIcon>
                         <ListItemText primary="Rules" />
                     </ListItem>
-                    <ListItem button disabled>
+                    <ListItem onClick={() => setTab(Options.Templates)} selected={tab === Options.Templates} button>
                         <ListItemIcon>
                             <i className="material-icons">description</i>
                         </ListItemIcon>
@@ -81,7 +87,29 @@ export default function PermanentDrawerLeft() {
             </Drawer>
             <main className={classes.content}>
                 <div className={classes.toolbar} />
-                <RulesEditor></RulesEditor>
+                {tab === Options.Origins && <RulesEditor></RulesEditor>}
+                {tab === Options.Templates && <TemplateEditor></TemplateEditor>}
+                {/*
+                <Editor.GeneralPermissionEditor
+                    type="origin"
+                    origin="https://example.com"
+                    settings={{ active: true, extends: '', rules: [] }}
+                />
+                <Editor.GeneralPermissionEditor
+                    type="template"
+                    template="default"
+                    settings={{ matches: [], no_matches: [], priority: 4234, rules: [] }}
+                />
+                <Editor.GeneralPermissionEditor
+                    type="origin"
+                    origin={null}
+                    settings={{ active: true, extends: '', rules: [] }}
+                />
+                <Editor.GeneralPermissionEditor
+                    type="template"
+                    template={null}
+                    settings={{ matches: [], no_matches: [], priority: 4234, rules: [] }}
+                /> */}
             </main>
         </div>
     )

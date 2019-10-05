@@ -1,4 +1,4 @@
-import { WebOpsSettingForSite, readSettingsForSite, Events } from '../shared/settings'
+import { WebOpsSettingForSite, readSettingsForSite, Events, settingsUpdating } from '../shared/settings'
 
 export interface WebOpsMainFrameHook {
     onPreferenceUpdated(newPreference: WebOpsSettingForSite): void
@@ -23,7 +23,8 @@ function codeInMainFrame() {
 }
 const eventID = Math.random() + ''
 async function updatePreference() {
-    const next = await readSettingsForSite(location.href)
+    await settingsUpdating
+    const next = readSettingsForSite(location.href)
     document.dispatchEvent(
         new CustomEvent(eventID, {
             detail: next,
@@ -36,9 +37,8 @@ const loadedHooks: HookFunction[] = []
 export function addHook(f: HookFunction) {
     loadedHooks.push(f)
 }
-const prefPromise = readSettingsForSite(location.href)
 export async function loadHooks() {
-    const preference = await prefPromise
+    const preference = readSettingsForSite(location.href)
     const hooksHTML = loadedHooks.map(f => `hook(${f.toString()});`).join('\n')
 
     const script = document.createElement('script')
