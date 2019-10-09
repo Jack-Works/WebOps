@@ -6,6 +6,7 @@ import {
     modifyTemplateRule,
 } from '../shared/settings.js'
 import { SettingsItemSwitchable, SettingsItemEditable } from './SettingsItem.js'
+import { WebOpsSettingsNotification, WebOpsSettingsMIDI } from '../shared/type.js'
 const {
     Card,
     CardContent,
@@ -29,6 +30,7 @@ interface OriginProps {
 type Props = OriginProps | TemplateProps
 export function GeneralPermissionEditor(props: Props) {
     const notification = getNotificationRule(props.settings)
+    const midi = getWebMIDIRule(props.settings)
     const [editingTitle, setTitle] = React.useState('')
 
     const input = (
@@ -138,6 +140,18 @@ export function GeneralPermissionEditor(props: Props) {
                         </List>
                     }
                 />
+                <SettingsItemSwitchable
+                    onSwitch={next => {
+                        midi.managed = next
+                        saveSettings(props)
+                    }}
+                    icon="music_note"
+                    name="Web MIDI API"
+                    active={midi.managed}
+                    secondary={
+                        'Mock an empty result' + ((midi as any)[InheritFromTemplate] ? ' (inherit from template)' : '')
+                    }
+                />
             </List>
         </Card>
     )
@@ -151,7 +165,7 @@ function saveSettings(props: Props) {
     }
 }
 
-function getNotificationRule(settings: WebOpsTemplate | WebOpsSettingForSite) {
+function getNotificationRule(settings: WebOpsTemplate | WebOpsSettingForSite): WebOpsSettingsNotification {
     const notification = settings.rules.find(x => x.name === 'Notification') || {
         managed: true,
         name: 'Notification',
@@ -159,7 +173,16 @@ function getNotificationRule(settings: WebOpsTemplate | WebOpsSettingForSite) {
         [InheritFromTemplate]: true,
     }
     settings.rules = settings.rules.filter(x => x.name !== notification.name).concat(notification)
-    return notification
+    return notification as WebOpsSettingsNotification
+}
+function getWebMIDIRule(settings: WebOpsTemplate | WebOpsSettingForSite): WebOpsSettingsMIDI {
+    const midi = settings.rules.find(x => x.name === 'MIDI') || {
+        managed: true,
+        name: 'MIDI',
+        [InheritFromTemplate]: true,
+    }
+    settings.rules = settings.rules.filter(x => x.name !== midi.name).concat(midi)
+    return midi as WebOpsSettingsMIDI
 }
 
 function SelectOptions(props: { selected: boolean; primary: string; secondary: string; onClick(): void }) {

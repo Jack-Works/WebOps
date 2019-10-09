@@ -1,8 +1,8 @@
 /// <reference path="./global.d.ts" />
 
-import { WebOpsSettingsNotification } from './types/Notification'
-export type WebOpsRules = 'Notification'
-export type WebOpsSettings = WebOpsSettingsNotification
+import { WebOpsSettingsNotification, WebOpsSettingsMIDI } from './type.js'
+export type WebOpsRules = 'Notification' | 'MIDI'
+export type WebOpsSettings = WebOpsSettingsNotification | WebOpsSettingsMIDI
 export interface WebOpsBaseSetting {
     name: WebOpsRules
     /**
