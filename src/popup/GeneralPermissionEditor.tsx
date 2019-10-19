@@ -4,9 +4,11 @@ import {
     modifyOriginRule,
     InheritFromTemplate,
     modifyTemplateRule,
+    WebOpsRules,
+    WebOpsSettings,
 } from '../shared/settings.js'
 import { SettingsItemSwitchable, SettingsItemEditable } from './SettingsItem.js'
-import { WebOpsSettingsNotification, WebOpsSettingsMIDI } from '../shared/type.js'
+import { WebOpsSettingsNotification, WebOpsSettingsMIDI, WebOpsSettingsServiceWorker } from '../shared/type.js'
 const {
     Card,
     CardContent,
@@ -29,8 +31,99 @@ interface OriginProps {
 }
 type Props = OriginProps | TemplateProps
 export function GeneralPermissionEditor(props: Props) {
-    const notification = getNotificationRule(props.settings)
-    const midi = getWebMIDIRule(props.settings)
+    //#region Notification
+    const notificationJSX = useSettingsUI<WebOpsSettingsNotification>(
+        props,
+        'Notification',
+        {
+            managed: true,
+            name: 'Notification',
+            value: 'default',
+        },
+        {
+            icon: 'notifications',
+            name: 'Notification',
+            secondary: x => 'Policy: ' + x.value,
+            options: [
+                {
+                    primary: 'Default',
+                    secondary: 'Let the browser handle everything',
+                    isActive: x => x.value === 'default',
+                    onActive: s => (s.value = 'default'),
+                },
+                {
+                    primary: 'Grant (mock)',
+                    secondary: `WebOps will tell the webpage that this permission is granted. (But it's actually not.)`,
+                    isActive: x => x.value === 'granted',
+                    onActive: x => (x.value = 'granted'),
+                },
+                {
+                    primary: 'Denied (mock)',
+                    secondary: `WebOps will tell the webpage that this permission is denied. (But it's actually not.)`,
+                    isActive: x => x.value === 'denied',
+                    onActive: x => (x.value = 'denied'),
+                },
+            ],
+        },
+    )
+    //#endregion
+    //#region MIDI
+    const midiJSX = useSettingsUI<WebOpsSettingsMIDI>(
+        props,
+        'MIDI',
+        {
+            managed: true,
+            name: 'MIDI',
+        },
+        {
+            icon: 'music_note',
+            name: 'Web MIDI API',
+            secondary: () => 'Mock an empty result',
+        },
+    )
+    //#endregion
+    //#region ServiceWorker
+    const serviceWorkerJSX = useSettingsUI<WebOpsSettingsServiceWorker>(
+        props,
+        'ServiceWorker',
+        {
+            managed: false,
+            name: 'ServiceWorker',
+            value: 'default',
+        },
+        {
+            icon: 'network_check',
+            name: 'Service Worker',
+            secondary: x => `Policy ${x.value}`,
+            options: [
+                {
+                    primary: 'Default',
+                    secondary: 'Let the browser handle everything',
+                    isActive: x => x.value === 'default',
+                    onActive: s => (s.value = 'default'),
+                },
+                {
+                    primary: 'Denied',
+                    secondary: `WebOps will reject the register of the Service Worker`,
+                    isActive: x => x.value === 'denied',
+                    onActive: x => (x.value = 'denied'),
+                },
+                {
+                    primary: 'Quite deny',
+                    secondary: `WebOps will reject the register quitely`,
+                    isActive: x => x.value === 'quite_deny',
+                    onActive: x => (x.value = 'quite_deny'),
+                },
+                {
+                    primary: 'Prompt',
+                    secondary: `WebOps will ask you if there is no Service Worker installed before`,
+                    isActive: x => x.value === 'prompt',
+                    onActive: x => (x.value = 'prompt'),
+                },
+            ],
+        },
+    )
+    //#endregion
     const [editingTitle, setTitle] = React.useState('')
 
     const input = (
@@ -95,63 +188,9 @@ export function GeneralPermissionEditor(props: Props) {
             {templateOnlySettings}
             <List subheader={<ListSubheader>Settings</ListSubheader>}>
                 {originOnlyActiveSetting}
-                <SettingsItemSwitchable
-                    onSwitch={next => {
-                        notification.managed = next
-                        saveSettings(props)
-                    }}
-                    icon="notifications"
-                    name="Notifications"
-                    active={notification.managed}
-                    secondary={
-                        'Policy: ' +
-                        notification.value +
-                        ((notification as any)[InheritFromTemplate] ? ' (inherit from template)' : '')
-                    }
-                    drawerContent={
-                        <List dense>
-                            <SelectOptions
-                                primary="Default"
-                                secondary="Let the browser handle everything"
-                                selected={notification.value === 'default'}
-                                onClick={() => {
-                                    notification.value = 'default'
-                                    saveSettings(props)
-                                }}
-                            />
-                            <SelectOptions
-                                primary="Grant (mock)"
-                                secondary="WebOps will tell the webpage that this permission is granted. (But it's actually not.)"
-                                selected={notification.value === 'granted'}
-                                onClick={() => {
-                                    notification.value = 'granted'
-                                    saveSettings(props)
-                                }}
-                            />
-                            <SelectOptions
-                                primary="Denied (mock)"
-                                secondary="WebOps will tell the webpage that this permission is denied. (But it's actually not.)"
-                                selected={notification.value === 'denied'}
-                                onClick={() => {
-                                    notification.value = 'denied'
-                                    saveSettings(props)
-                                }}
-                            />
-                        </List>
-                    }
-                />
-                <SettingsItemSwitchable
-                    onSwitch={next => {
-                        midi.managed = next
-                        saveSettings(props)
-                    }}
-                    icon="music_note"
-                    name="Web MIDI API"
-                    active={midi.managed}
-                    secondary={
-                        'Mock an empty result' + ((midi as any)[InheritFromTemplate] ? ' (inherit from template)' : '')
-                    }
-                />
+                {notificationJSX}
+                {midiJSX}
+                {serviceWorkerJSX}
             </List>
         </Card>
     )
@@ -165,24 +204,60 @@ function saveSettings(props: Props) {
     }
 }
 
-function getNotificationRule(settings: WebOpsTemplate | WebOpsSettingForSite): WebOpsSettingsNotification {
-    const notification = settings.rules.find(x => x.name === 'Notification') || {
-        managed: true,
-        name: 'Notification',
-        value: 'default',
-        [InheritFromTemplate]: true,
-    }
-    settings.rules = settings.rules.filter(x => x.name !== notification.name).concat(notification)
-    return notification as WebOpsSettingsNotification
+interface UI<T> {
+    icon: string
+    name: string
+    secondary?: (settings: T) => string
+    options?: {
+        primary: string
+        secondary: string
+        isActive(settings: T): boolean
+        onActive(settings: T): void
+    }[]
 }
-function getWebMIDIRule(settings: WebOpsTemplate | WebOpsSettingForSite): WebOpsSettingsMIDI {
-    const midi = settings.rules.find(x => x.name === 'MIDI') || {
-        managed: true,
-        name: 'MIDI',
+
+function useSettingsUI<T extends WebOpsSettings>(props: Props, name: WebOpsRules, defaultValue: T, ui: UI<T>) {
+    const settings = props.settings
+    const rule: T = (settings.rules.find(x => x.name === name) || {
+        ...defaultValue,
         [InheritFromTemplate]: true,
-    }
-    settings.rules = settings.rules.filter(x => x.name !== midi.name).concat(midi)
-    return midi as WebOpsSettingsMIDI
+    }) as any
+    settings.rules = settings.rules.filter(x => x.name !== rule.name).concat(rule)
+
+    const jsx = useSwitchableSetting(props, rule, ui)
+    return jsx
+}
+
+function useSwitchableSetting<T extends WebOpsSettings>(props: Props, settings: T, ui: UI<T>) {
+    const inheritFromTemplateNote = (settings as any)[InheritFromTemplate] ? ' (inherit from template)' : ''
+    const drawerContent = ui.options ? (
+        <List dense>
+            {ui.options.map(x => (
+                <SelectOptions
+                    primary={x.primary}
+                    secondary={x.secondary}
+                    selected={x.isActive(settings)}
+                    onClick={() => {
+                        x.onActive(settings)
+                        saveSettings(props)
+                    }}
+                />
+            ))}
+        </List>
+    ) : null
+    return (
+        <SettingsItemSwitchable
+            onSwitch={next => {
+                settings.managed = next
+                saveSettings(props)
+            }}
+            icon={ui.icon}
+            name={ui.name}
+            active={settings.managed}
+            secondary={(ui.secondary || (() => ''))(settings) + inheritFromTemplateNote}
+            drawerContent={drawerContent}
+        />
+    )
 }
 
 function SelectOptions(props: { selected: boolean; primary: string; secondary: string; onClick(): void }) {

@@ -1,9 +1,20 @@
-import { WebOpsSettingForSite, readSettingsForSite, Events, settingsUpdating } from '../shared/settings'
+import {
+    WebOpsSettingForSite,
+    readSettingsForSite,
+    Events,
+    settingsUpdating,
+    WebOpsRules,
+    WebOpsSettings,
+} from '../shared/settings'
 
 export interface WebOpsMainFrameHook {
     onPreferenceUpdated(newPreference: WebOpsSettingForSite): void
 }
-type HookFunction = (getPreference: () => WebOpsSettingForSite) => WebOpsMainFrameHook
+type HookFunction = (apis: {
+    createGetRule: <T extends WebOpsSettings>(name: WebOpsRules, defaultValue: T) => (pref?: WebOpsSettingForSite) => T
+    activeForThisSite: boolean
+    preference: WebOpsSettingForSite
+}) => WebOpsMainFrameHook
 function codeInMainFrame() {
     const hooks = new Set<WebOpsMainFrameHook>()
     let preference = ('placeholder1' as unknown) as WebOpsSettingForSite
@@ -14,7 +25,18 @@ function codeInMainFrame() {
         hooks.forEach(x => x.onPreferenceUpdated(e.detail))
     })
     const hook = function(hook: HookFunction) {
-        hooks.add(hook(() => preference))
+        hooks.add(
+            hook({
+                createGetRule: (ruleName, defaultRule) => (p = preference) =>
+                    ((p.rules.filter(x => x.name === ruleName)[0] || defaultRule) as WebOpsSettings) as any,
+                get activeForThisSite() {
+                    return preference.active
+                },
+                get preference() {
+                    return preference
+                },
+            }),
+        )
     }
     hook.toString()
     // @ts-ignore

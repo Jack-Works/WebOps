@@ -1,22 +1,18 @@
 import { addHook } from '../inject'
+import { WebOpsSettingsMIDI } from '../../shared/type'
 
-addHook(getPreference => {
-    function getRule(pref = getPreference()) {
-        return (
-            pref.rules.filter(x => x.name === 'MIDI')[0] || {
-                managed: true,
-                name: 'MIDI',
-            }
-        )
-    }
+addHook(api => {
+    const getRule = api.createGetRule<WebOpsSettingsMIDI>('MIDI', {
+        managed: true,
+        name: 'MIDI',
+    })
     // @ts-ignore
     const oldRequestMIDIAccess: () => Promise<any> = Navigator.prototype.requestMIDIAccess
     // @ts-ignore
     Navigator.prototype.requestMIDIAccess = new Proxy(oldRequestMIDIAccess, {
         apply(target, thisArg, args) {
-            const pref = getPreference()
             const rule = getRule()
-            if (pref.active === false || rule.managed === false) return Reflect.apply(target, thisArg, args)
+            if (api.activeForThisSite === false || rule.managed === false) return Reflect.apply(target, thisArg, args)
             const fakeObject = {
                 sysexEnabled: false,
                 inputs: { size: 0 },

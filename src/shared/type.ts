@@ -9,3 +9,8 @@ export interface WebOpsSettingsNotification extends WebOpsBaseSetting {
     value: NotificationPermission
     name: 'Notification'
 }
+
+export interface WebOpsSettingsServiceWorker extends WebOpsBaseSetting {
+    name: 'ServiceWorker'
+    value: 'prompt' | 'denied' | 'quite_deny' | 'default'
+}

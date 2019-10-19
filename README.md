@@ -4,8 +4,8 @@ AppOps for Web.
 
 ## Todo
 
--   [ ] UI for edit template.
 -   [ ] UI for manage all the rules.
+-   [ ] UI for add template
 
 ## Supported permissions
 
@@ -14,4 +14,4 @@ AppOps for Web.
 | Notification   | Yes  | Yes          | N/A |              |                 |              |
 | Web MIDI API   | N/A  | Yes          | N/A |              |                 |              |
 | Cookie         |      |              |     |              |                 |              |
-| Service Worker |      |              |     |              |                 |              |
+| Service Worker | Yes  | Yes          | N/A |              |                 | Yes          |
